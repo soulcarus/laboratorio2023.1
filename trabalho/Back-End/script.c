@@ -1,12 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define MAX_SIZE 1000000
 
 typedef struct evento
 {
-    char *nome;
-    char *data;
+    char nome[100];
+    char data[11];
     int capacidade;
     float valor;
     struct evento *prox;
@@ -19,12 +20,12 @@ evento *fim = NULL;
 
 FILE *file;
 
-void inicializar(char *nome, char *data, int capacidade, float valor)
+void inicializar(const char *nome, const char *data, int capacidade, float valor)
 {
 
     evento *novo = malloc(sizeof(evento));
-    novo->nome = nome;
-    novo->data = data;
+    strcpy(novo->nome, nome);
+    strcpy(novo->data, data);
     novo->capacidade = capacidade;
     novo->valor = valor;
     novo->prox = NULL;
@@ -72,22 +73,20 @@ void sobrescrever_arquivo()
     }
 
     evento *aux = inicio;
-    printf("teste");
-    int contador = 1;
 
     for (int i = 0; i < tam; i++)
     {
-        fputs("", aux->nome);
-        printf("Data: %s\n", aux->data);
-        printf("Capacidade: %d\n", aux->capacidade);
-        printf("Valor: %.2f\n\n", aux->valor);
-        contador += 1;
+        fprintf(file,"Nome: %s\n", aux->nome);
+        fprintf(file,"Data: %s\n", aux->data);
+        fprintf(file, "Capacidade: %d\n", aux->capacidade);
+        fprintf(file, "Valor: %.2f\n\n", aux->valor);
+
         aux = aux->prox;
     }
     fclose(file);
 }
 
-FILE *ler_arquivo()
+void ler_arquivo()
 {
 
     file = fopen("registros.txt", "r");
@@ -97,9 +96,29 @@ FILE *ler_arquivo()
         system("pause");
         exit(1);
     }
-    fclose(file);
 
-    return file;
+    char linha[MAX_SIZE];
+    while (fgets(linha, MAX_SIZE, file) != NULL)
+    {
+        char nome[100];
+        char data[11];
+        int capacidade;
+        float valor;
+
+        sscanf(linha, "Nome: %99[^\n]", nome);
+        fgets(linha, MAX_SIZE, file);
+        sscanf(linha, "Data: %10[^\n]", data);
+        fgets(linha, MAX_SIZE, file);
+        sscanf(linha, "Capacidade: %d", &capacidade);
+        fgets(linha, MAX_SIZE, file);
+        sscanf(linha, "Valor: %f", &valor);
+        fgets(linha, MAX_SIZE, file);  // Ler a linha em branco
+
+        // Criar o evento e adicioná-lo à lista
+        inicializar(nome, data, capacidade, valor);
+    }
+
+    fclose(file);
 }
 
 int main()
@@ -125,9 +144,9 @@ int main()
         }else if (escolha == 2){ // maneira antiga
             listar_eventos();
         }else if (escolha == 3){
-            NULL;
+            sobrescrever_arquivo();
         }else if (escolha == 4){
-            NULL;
+            ler_arquivo();
         }else if (escolha == 0){
             exit(1);
         }else{
