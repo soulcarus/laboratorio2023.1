@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <cjson/cJSON.h>
 #include <string.h>
 
 #define MAX_SIZE 1000000
@@ -64,32 +65,44 @@ void listar_eventos()
 
 void sobrescrever_arquivo()
 {
-    file = fopen("registros.txt", "w");
+    file = fopen("registros.json", "w");
     if (file == NULL)
     {
         printf("Erro na abertura do arquivo");
         system("pause");
         exit(1);
     }
+
+    fprintf(file, "[\n");  // Início do array JSON
 
     evento *aux = inicio;
 
     for (int i = 0; i < tam; i++)
     {
-        fprintf(file,"Nome: %s\n", aux->nome);
-        fprintf(file,"Data: %s\n", aux->data);
-        fprintf(file, "Capacidade: %d\n", aux->capacidade);
-        fprintf(file, "Valor: %.2f\n\n", aux->valor);
+        fprintf(file, "  {\n");  // Início do objeto JSON
+        fprintf(file, "    \"Nome\": \"%s\",\n", aux->nome);
+        fprintf(file, "    \"Data\": \"%s\",\n", aux->data);
+        fprintf(file, "    \"Capacidade\": %d,\n", aux->capacidade);
+        fprintf(file, "    \"Valor\": %.2f\n", aux->valor);
+        fprintf(file, "  }");
+
+        if (i < tam - 1)
+            fprintf(file, ",");
+
+        fprintf(file, "\n");
 
         aux = aux->prox;
     }
+
+    fprintf(file, "]");  // Fim do array JSON
+
     fclose(file);
 }
 
+
 void ler_arquivo()
 {
-
-    file = fopen("registros.txt", "r");
+    file = fopen("registros.json", "r");
     if (file == NULL)
     {
         printf("Erro na abertura do arquivo");
@@ -97,28 +110,36 @@ void ler_arquivo()
         exit(1);
     }
 
-    char linha[MAX_SIZE];
-    while (fgets(linha, MAX_SIZE, file) != NULL)
+    fseek(file, 0, SEEK_END);
+    long fileSize = ftell(file);
+    rewind(file);
+
+    char *jsonString = malloc(fileSize + 1);
+    fread(jsonString, 1, fileSize, file);
+    jsonString[fileSize] = '\0';
+
+    cJSON *root = cJSON_Parse(jsonString);
+    int arraySize = cJSON_GetArraySize(root);
+
+    for (int i = 0; i < arraySize; i++)
     {
-        char nome[100];
-        char data[11];
-        int capacidade;
-        float valor;
+        cJSON *item = cJSON_GetArrayItem(root, i);
 
-        sscanf(linha, "Nome: %99[^\n]", nome);
-        fgets(linha, MAX_SIZE, file);
-        sscanf(linha, "Data: %10[^\n]", data);
-        fgets(linha, MAX_SIZE, file);
-        sscanf(linha, "Capacidade: %d", &capacidade);
-        fgets(linha, MAX_SIZE, file);
-        sscanf(linha, "Valor: %f", &valor);
-        fgets(linha, MAX_SIZE, file);  // Ler a linha em branco
+        cJSON *nome = cJSON_GetObjectItem(item, "Nome");
+        printf("Nome: %s\n", nome->valuestring);
 
-        // Criar o evento e adicioná-lo à lista
-        inicializar(nome, data, capacidade, valor);
+        cJSON *data = cJSON_GetObjectItem(item, "Data");
+        printf("Data: %s\n", data->valuestring);
+
+        cJSON *capacidade = cJSON_GetObjectItem(item, "Capacidade");
+        printf("Capacidade: %d\n", capacidade->valueint);
+
+        cJSON *valor = cJSON_GetObjectItem(item, "Valor");
+        printf("Valor: %.2f\n", valor->valuedouble);
     }
 
     fclose(file);
+    free(jsonString);
 }
 
 int main()
