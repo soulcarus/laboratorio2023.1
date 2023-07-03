@@ -1,9 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <cjson/cJSON.h>
 #include <string.h>
 
-#define MAX_SIZE 1000000
+#define MAX_SIZE 1000
 
 typedef struct evento
 {
@@ -11,175 +10,204 @@ typedef struct evento
     char data[11];
     int capacidade;
     float valor;
-    struct evento *prox;
-    struct evento *ant;
 } evento;
-
-evento *inicio = NULL;
-int tam;
-evento *fim = NULL;
 
 FILE *file;
 
-void inicializar(const char *nome, const char *data, int capacidade, float valor)
+void adicionar_evento()
 {
+    evento novo;
 
-    evento *novo = malloc(sizeof(evento));
-    strcpy(novo->nome, nome);
-    strcpy(novo->data, data);
-    novo->capacidade = capacidade;
-    novo->valor = valor;
-    novo->prox = NULL;
-    novo->ant = NULL;
+    printf("Insira o nome do evento: ");
+    scanf("%s", novo.nome);
 
-    if (inicio == NULL && tam == 0)
+    printf("Insira a data do evento (DD/MM/AAAA): ");
+    scanf("%s", novo.data);
+
+    printf("Insira a capacidade do evento: ");
+    scanf("%d", &novo.capacidade);
+
+    printf("Insira o valor do evento: ");
+    scanf("%f", &novo.valor);
+
+    file = fopen("eventos.txt", "a");
+    if (file == NULL)
     {
-        inicio = novo;
-        fim = novo;
-    }
-    else
-    {
-        fim->prox = novo;
-        fim = novo;
+        printf("Erro na abertura do arquivo\n");
+        exit(1);
     }
 
-    tam += 1;
+    fprintf(file, "%s %s %d %.2f\n", novo.nome, novo.data, novo.capacidade, novo.valor);
+
+    fclose(file);
 }
 
 void listar_eventos()
 {
-    evento *aux = inicio;
+    file = fopen("eventos.txt", "r");
+    if (file == NULL)
+    {
+        printf("Erro na abertura do arquivo\n");
+        exit(1);
+    }
+
+    evento aux;
     int contador = 1;
 
-    for (int i = 0; i < tam; i++)
+    while (fscanf(file, "%s %s %d %f\n", aux.nome, aux.data, &aux.capacidade, &aux.valor) != EOF)
     {
         printf("\nEvento Número %d\n\n", contador);
-        printf("Nome: %s\n", aux->nome);
-        printf("Data: %s\n", aux->data);
-        printf("Capacidade: %d\n", aux->capacidade);
-        printf("Valor: %.2f\n\n", aux->valor);
+        printf("Nome: %s\n", aux.nome);
+        printf("Data: %s\n", aux.data);
+        printf("Capacidade: %d\n", aux.capacidade);
+        printf("Valor: %.2f\n\n", aux.valor);
         contador += 1;
-        aux = aux->prox;
     }
-}
-
-void sobrescrever_arquivo()
-{
-    file = fopen("registros.json", "w");
-    if (file == NULL)
-    {
-        printf("Erro na abertura do arquivo");
-        system("pause");
-        exit(1);
-    }
-
-    fprintf(file, "[\n");  // Início do array JSON
-
-    evento *aux = inicio;
-
-    for (int i = 0; i < tam; i++)
-    {
-        fprintf(file, "  {\n");  // Início do objeto JSON
-        fprintf(file, "    \"Nome\": \"%s\",\n", aux->nome);
-        fprintf(file, "    \"Data\": \"%s\",\n", aux->data);
-        fprintf(file, "    \"Capacidade\": %d,\n", aux->capacidade);
-        fprintf(file, "    \"Valor\": %.2f\n", aux->valor);
-        fprintf(file, "  }");
-
-        if (i < tam - 1)
-            fprintf(file, ",");
-
-        fprintf(file, "\n");
-
-        aux = aux->prox;
-    }
-
-    fprintf(file, "]");  // Fim do array JSON
-
     fclose(file);
 }
 
-
-void ler_arquivo()
+void atualizar_evento()
 {
-    file = fopen("registros.json", "r");
+    int num_evento;
+    printf("Insira o número do evento que deseja atualizar: ");
+    scanf("%d", &num_evento);
+
+    evento eventos[MAX_SIZE];
+    int num_eventos = 0;
+
+    file = fopen("eventos.txt", "r");
     if (file == NULL)
     {
-        printf("Erro na abertura do arquivo");
-        system("pause");
+        printf("Erro na abertura do arquivo\n");
         exit(1);
     }
 
-    fseek(file, 0, SEEK_END);
-    long fileSize = ftell(file);
-    rewind(file);
-
-    char *jsonString = malloc(fileSize + 1);
-    fread(jsonString, 1, fileSize, file);
-    jsonString[fileSize] = '\0';
-
-    cJSON *root = cJSON_Parse(jsonString);
-    int arraySize = cJSON_GetArraySize(root);
-
-    for (int i = 0; i < arraySize; i++)
-    {
-        cJSON *item = cJSON_GetArrayItem(root, i);
-
-        cJSON *nome = cJSON_GetObjectItem(item, "Nome");
-        printf("Nome: %s\n", nome->valuestring);
-
-        cJSON *data = cJSON_GetObjectItem(item, "Data");
-        printf("Data: %s\n", data->valuestring);
-
-        cJSON *capacidade = cJSON_GetObjectItem(item, "Capacidade");
-        printf("Capacidade: %d\n", capacidade->valueint);
-
-        cJSON *valor = cJSON_GetObjectItem(item, "Valor");
-        printf("Valor: %.2f\n", valor->valuedouble);
-    }
+    while (fscanf(file, "%s %s %d %f\n", eventos[num_eventos].nome, eventos[num_eventos].data, &eventos[num_eventos].capacidade, &eventos[num_eventos].valor) != EOF)
+        num_eventos += 1;
 
     fclose(file);
-    free(jsonString);
+
+    if (num_evento < 1 || num_evento > num_eventos)
+        printf("Número de evento inválido!\n");
+    else
+    {
+        evento *atualizar = &eventos[num_evento - 1];
+
+        printf("Insira o novo nome do evento (deixe em branco para não alterar): ");
+        char novo_nome[100];
+        scanf("\n%[^\n]", novo_nome);
+        if (strcmp(novo_nome, "") != 0)
+            strcpy(atualizar->nome, novo_nome);
+
+        printf("Insira a nova data do evento (deixe em branco para não alterar): ");
+        char nova_data[11];
+        scanf("\n%[^\n]", nova_data);
+        if (strcmp(nova_data, "") != 0)
+            strcpy(atualizar->data, nova_data);
+
+        printf("Insira a nova capacidade do evento (digite -1 para não alterar): ");
+        int nova_capacidade;
+        scanf("%d", &nova_capacidade);
+        if (nova_capacidade != -1)
+            atualizar->capacidade = nova_capacidade;
+
+        printf("Insira o novo valor do evento (digite -1 para não alterar): ");
+        float novo_valor;
+        scanf("%f", &novo_valor);
+        if (novo_valor != -1)
+            atualizar->valor = novo_valor;
+
+        file = fopen("eventos.txt", "w");
+        if (file == NULL)
+        {
+            printf("Erro na abertura do arquivo\n");
+            exit(1);
+        }
+
+        for (int i = 0; i < num_eventos; i++)
+            fprintf(file, "%s %s %d %.2f\n", eventos[i].nome, eventos[i].data, eventos[i].capacidade, eventos[i].valor);
+
+        fclose(file);
+    }
+}
+
+void remover_evento()
+{
+    int num_evento;
+    
+    printf("Insira o número do evento que deseja remover: ");
+    scanf("%d", &num_evento);
+
+    evento eventos[MAX_SIZE];
+    int num_eventos = 0;
+
+    file = fopen("eventos.txt", "r");
+    if (file == NULL)
+    {
+        printf("Erro na abertura do arquivo\n");
+        exit(1);
+    }
+
+    while (fscanf(file, "%s %s %d %f\n", eventos[num_eventos].nome, eventos[num_eventos].data, &eventos[num_eventos].capacidade, &eventos[num_eventos].valor) != EOF)
+        num_eventos += 1;
+
+    fclose(file);
+
+    if (num_evento < 1 || num_evento > num_eventos)
+        printf("Número de evento inválido!\n");
+    else
+    {
+        for (int i = num_evento - 1; i < num_eventos - 1; i++)
+            eventos[i] = eventos[i + 1];
+
+        num_eventos -= 1;
+
+        file = fopen("eventos.txt", "w");
+        if (file == NULL)
+        {
+            printf("Erro na abertura do arquivo\n");
+            exit(1);
+        }
+
+        for (int i = 0; i < num_eventos; i++)
+            fprintf(file, "%s %s %d %.2f\n", eventos[i].nome, eventos[i].data, eventos[i].capacidade, eventos[i].valor);
+
+        fclose(file);
+    }
 }
 
 int main()
-{   
+{
     int escolha;
 
-    while(1){
+    while (1)
+    {
         printf("\n\nGERENCIAMENTO DE EVENTOS\n");
-        printf("\n[1] Cadastrar Eventos\n");
+        printf("\n[1] Adicionar Evento\n");
         printf("[2] Listar Eventos\n");
-        printf("[3] Atualizar Evento\n");
+        printf("[3] Editar Evento\n");
         printf("[4] Remover Evento\n");
         printf("[0] Sair\n");
 
-        printf("\nInsira o numero da opção: ");
+        printf("\nInsira o número da opção: ");
         scanf("%d", &escolha);
 
-        if (escolha == 1){
-            inicializar("L7nnon", "27/12/2023", 72, 129.90);
-            inicializar("Matue", "12/12/2023", 302, 249.90);
-            inicializar("Icaro", "08/08/2023", 50, 79.90);
-            inicializar("Carlinhos", "21/06/2023", 5, 29.90);
-        }else if (escolha == 2){ // maneira antiga
+        if (escolha == 1)
+            adicionar_evento();
+        else if (escolha == 2)
             listar_eventos();
-        }else if (escolha == 3){
-            sobrescrever_arquivo();
-        }else if (escolha == 4){
-            ler_arquivo();
-        }else if (escolha == 0){
-            exit(1);
-        }else{
-            printf("ESCOLHA INVÁLIDA");
+        else if (escolha == 3)
+            atualizar_evento();
+        else if (escolha == 4)
+            remover_evento();
+        else if (escolha == 0)
+            exit(0);
+        else
+        {
+            printf("ESCOLHA INVÁLIDA\n");
             break;
         }
-
     }
-    
-
-    listar_eventos();
-    sobrescrever_arquivo();
 
     return 0;
 }
