@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define MAX_SIZE 1000
+#define MAX_SIZE 10000
 
 typedef struct evento
 {
@@ -14,21 +14,14 @@ typedef struct evento
 
 FILE *file;
 
-void adicionar_evento()
+void adicionar_evento(char *nome, char *data, int capacidade, float valor)
 {
     evento novo;
 
-    printf("Insira o nome do evento: ");
-    scanf("%s", novo.nome);
-
-    printf("Insira a data do evento (DD/MM/AAAA): ");
-    scanf("%s", novo.data);
-
-    printf("Insira a capacidade do evento: ");
-    scanf("%d", &novo.capacidade);
-
-    printf("Insira o valor do evento: ");
-    scanf("%f", &novo.valor);
+    strcpy(novo.nome, nome);
+    strcpy(novo.data, data);
+    novo.capacidade = capacidade;
+    novo.valor = valor;
 
     file = fopen("eventos.txt", "a");
     if (file == NULL)
@@ -63,15 +56,12 @@ void listar_eventos()
         printf("Valor: %.2f\n\n", aux.valor);
         contador += 1;
     }
+
     fclose(file);
 }
 
-void atualizar_evento()
+void atualizar_evento(int num_evento, char *nome, char *data, int capacidade, float valor)
 {
-    int num_evento;
-    printf("Insira o número do evento que deseja atualizar: ");
-    scanf("%d", &num_evento);
-
     evento eventos[MAX_SIZE];
     int num_eventos = 0;
 
@@ -93,29 +83,17 @@ void atualizar_evento()
     {
         evento *atualizar = &eventos[num_evento - 1];
 
-        printf("Insira o novo nome do evento (deixe em branco para não alterar): ");
-        char novo_nome[100];
-        scanf("\n%[^\n]", novo_nome);
-        if (strcmp(novo_nome, "") != 0)
-            strcpy(atualizar->nome, novo_nome);
+        if (strcmp(nome, "") != 0)
+            strcpy(atualizar->nome, nome);
 
-        printf("Insira a nova data do evento (deixe em branco para não alterar): ");
-        char nova_data[11];
-        scanf("\n%[^\n]", nova_data);
-        if (strcmp(nova_data, "") != 0)
-            strcpy(atualizar->data, nova_data);
+        if (strcmp(data, "") != 0)
+            strcpy(atualizar->data, data);
 
-        printf("Insira a nova capacidade do evento (digite -1 para não alterar): ");
-        int nova_capacidade;
-        scanf("%d", &nova_capacidade);
-        if (nova_capacidade != -1)
-            atualizar->capacidade = nova_capacidade;
+        if (capacidade != -1)
+            atualizar->capacidade = capacidade;
 
-        printf("Insira o novo valor do evento (digite -1 para não alterar): ");
-        float novo_valor;
-        scanf("%f", &novo_valor);
-        if (novo_valor != -1)
-            atualizar->valor = novo_valor;
+        if (valor != -1)
+            atualizar->valor = valor;
 
         file = fopen("eventos.txt", "w");
         if (file == NULL)
@@ -131,13 +109,8 @@ void atualizar_evento()
     }
 }
 
-void remover_evento()
+void remover_evento(int num_evento)
 {
-    int num_evento;
-    
-    printf("Insira o número do evento que deseja remover: ");
-    scanf("%d", &num_evento);
-
     evento eventos[MAX_SIZE];
     int num_eventos = 0;
 
@@ -152,7 +125,7 @@ void remover_evento()
         num_eventos += 1;
 
     fclose(file);
-
+    
     if (num_evento < 1 || num_evento > num_eventos)
         printf("Número de evento inválido!\n");
     else
@@ -176,37 +149,46 @@ void remover_evento()
     }
 }
 
-int main()
+int main(int argc, char *argv[])
 {
-    int escolha;
+    char *action = argv[1];
 
-    while (1)
+    if (strcmp(action, "adicionar") == 0)
     {
-        printf("\n\nGERENCIAMENTO DE EVENTOS\n");
-        printf("\n[1] Adicionar Evento\n");
-        printf("[2] Listar Eventos\n");
-        printf("[3] Editar Evento\n");
-        printf("[4] Remover Evento\n");
-        printf("[0] Sair\n");
+        char *nome = argv[2];
+        char *data = argv[3];
+        char *capacidade_str = argv[4];
+        char *valor_str = argv[5];
 
-        printf("\nInsira o número da opção: ");
-        scanf("%d", &escolha);
+        int capacidade = atoi(capacidade_str);
+        float valor = atof(valor_str);
 
-        if (escolha == 1)
-            adicionar_evento();
-        else if (escolha == 2)
-            listar_eventos();
-        else if (escolha == 3)
-            atualizar_evento();
-        else if (escolha == 4)
-            remover_evento();
-        else if (escolha == 0)
-            exit(0);
-        else
-        {
-            printf("ESCOLHA INVÁLIDA\n");
-            break;
-        }
+        adicionar_evento(nome, data, capacidade, valor);
+        printf("DEU BOM!");
+    }
+    else if (strcmp(action, "listar") == 0)
+    {
+        listar_eventos();
+    }
+    else if (strcmp(action, "editar") == 0)
+    {
+        int num_evento = atoi(argv[6]);
+        char *nome = argv[2];
+        char *data = argv[3];
+        int capacidade = atoi(argv[4]);
+        float valor = atof(argv[5]);
+
+        atualizar_evento(num_evento, nome, data, capacidade, valor);
+    }
+    else if (strcmp(action, "remover") == 0)
+    {
+        int num_evento = atoi(argv[2]);
+
+        remover_evento(num_evento);
+    }
+    else
+    {
+        printf("Ação inválida\n");
     }
 
     return 0;
