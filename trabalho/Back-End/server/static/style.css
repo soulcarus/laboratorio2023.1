@@ -15,11 +15,8 @@ header {
 
 h1 {
   font-size: 28px; /*gerenciamento de eventos*/
-  position: absolute;
   /*margin: 0;*/
-  top: 10px;
-  left: 10px;
-  font-size: 30px;
+  margin: 0 300px 0 0;
 }
 
 main {
@@ -117,7 +114,7 @@ background-image: url(./img/magico\ de\ oz.webp);
 background-size: 405px 230px;
 }
 
-.button {
+#button {
   display: flex;
   color: #fff;
   padding: 10px;
@@ -130,15 +127,40 @@ background-size: 405px 230px;
   top: 400%;
 }
 
-.button:hover{
+#button:hover{
   cursor: pointer;
   background-color: wheat;
 }
 
 .container {
   max-width: 800px;
-  margin: 0 auto;
+  margin: 0 0 0 650px;
   padding: 20px;
+}
+
+.container h2{
+  font-size: 30px;
+  margin: 0 0 30px 100px;
+}
+
+#botao-criar{
+  margin: 0 0 0 175px;
+  display: flex;
+  color: #1d1333;
+  padding: 10px;
+  width: fit-content;
+  background: rgb(255, 255, 255);
+  border-radius: 10px;
+  transition: all 0.3s ease-in-out;
+  border-style: none;
+  position: relative;
+  top: 400%;
+}
+
+#botao-criar:hover{
+  cursor: pointer;
+  background-color: #1d1333;
+  color: white;
 }
 
 form {
@@ -190,4 +212,39 @@ th {
   left: 25%;
   font-size: 60px;
   font-family: titulo-font;
+} 
+
+#nome {
+  border-radius: 30px;
+  border: 1px solid #1d1333;
+  width: 50%;
+  height: 30px;
+}
+
+#data {
+  border-radius: 30px;
+  border: 1px solid #1d1333; 
+   width: 50%;
+  height: 30px;
+}
+
+#capacidade {
+  border-radius: 30px;
+  border: 1px solid #1d1333;
+  width: 50%;
+  height: 30px;
+}
+
+#valor {
+  border-radius: 30px;
+  border: 1px solid #1d1333;
+  width: 50%;
+  height: 30px;
+}
+
+#local {
+  border-radius: 30px;
+  border: 1px solid #1d1333;
+  width: 50%;
+  height: 30px;
 }
