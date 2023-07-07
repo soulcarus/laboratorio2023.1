@@ -1,7 +1,2 @@
-Djavan 27/10/2023 998 99.9 Arena_Hall
-Slipmami 06/07/2023 996 49.9 Corredor_RU
-O_Magico_de_Oz 09/08/2023 98 29.9 Auditorio_2
-Nattanzinho 03/08/2023_ate_08/08/2023 9998 0.0 Praça_Centro
-Zé_Vaqueiro 03/08/2023_ate_08/08/2023 9996 0.0 Praça_Centro
-Aniversario_Icaro 08/08/2023 9999981 0.0 Bem_ali
-Pos_Festa 09/09/2023 999998 0.0 UFC
+icaro 1230123 8 10213.0 icaro
+valeria valeria 8 10.0 valeria

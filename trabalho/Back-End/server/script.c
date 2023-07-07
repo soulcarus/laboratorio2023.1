@@ -24,6 +24,7 @@ typedef struct usuario
 
 FILE *file;
 
+// Verifica se um login já existe no arquivo "usuarios.txt"
 int verificarLogin(char *login)
 {
     file = fopen("usuarios.txt", "r");
@@ -52,9 +53,12 @@ int verificarLogin(char *login)
     return 0; // Login não existe
 }
 
-void cadastro(char *nome, char *login, char *senha, char *email, char *telefone){
-
-    if (verificarLogin(login)){
+// Realiza o cadastro de um usuário
+void cadastro(char *nome, char *login, char *senha, char *email, char *telefone)
+{
+    // Verifica se o login já existe
+    if (verificarLogin(login))
+    {
         printf("Login já existe!\n");
         return;
     }
@@ -76,12 +80,14 @@ void cadastro(char *nome, char *login, char *senha, char *email, char *telefone)
     fprintf(file, "%s %s %s %s %s\n", novo.login, novo.senha, novo.nome, novo.email, novo.telefone);
 
     fclose(file);
-
 }
 
-int verificar_credenciais(char *login, char *senha) {
+// Verifica se as credenciais (login e senha) são válidas
+int verificar_credenciais(char *login, char *senha)
+{
     file = fopen("usuarios.txt", "r");
-    if (file == NULL) {
+    if (file == NULL)
+    {
         printf("Erro na abertura do arquivo\n");
         exit(1);
     }
@@ -92,8 +98,10 @@ int verificar_credenciais(char *login, char *senha) {
     strcpy(novo.login, login);
     strcpy(novo.senha, senha);
 
-    while (fscanf(file, "%s %s %s %s %s\n", aux.login, aux.senha, aux.nome, aux.email, aux.telefone) != EOF) {
-        if (strcmp(novo.login, aux.login) == 0 && strcmp(novo.senha, aux.senha) == 0) {
+    while (fscanf(file, "%s %s %s %s %s\n", aux.login, aux.senha, aux.nome, aux.email, aux.telefone) != EOF)
+    {
+        if (strcmp(novo.login, aux.login) == 0 && strcmp(novo.senha, aux.senha) == 0)
+        {
             fclose(file);
             return 1; // Credenciais válidas
         }
@@ -103,6 +111,7 @@ int verificar_credenciais(char *login, char *senha) {
     return 0; // Credenciais inválidas
 }
 
+// Realiza o login de um usuário
 int realizarLogin(char *login, char *senha)
 {
     if (verificar_credenciais(login, senha))
@@ -199,6 +208,7 @@ int *ler_eventos_usuario(char *login, int *num_eventos)
     return eventos;
 }
 
+// Adiciona um evento à lista de eventos do usuário
 void adicionar_evento_usuario(char *login, int num_evento)
 {
     // Crie um arquivo temporário para armazenar as alterações
@@ -265,6 +275,7 @@ void adicionar_evento_usuario(char *login, int num_evento)
     }
 }
 
+// Adiciona um novo evento à lista de eventos
 void adicionar_evento(char *nome, char *data, int capacidade, float valor, char *local)
 {
     evento novo;
@@ -287,7 +298,8 @@ void adicionar_evento(char *nome, char *data, int capacidade, float valor, char 
     fclose(file);
 }
 
-void atualizar_evento(int num_evento, char *nome, char *data, int capacidade, float valor, char * local)
+// Atualiza um evento existente na lista de eventos
+void atualizar_evento(int num_evento, char *nome, char *data, int capacidade, float valor, char *local)
 {
     evento eventos[MAX_SIZE];
     int num_eventos = 0;
@@ -333,7 +345,6 @@ void atualizar_evento(int num_evento, char *nome, char *data, int capacidade, fl
         fclose(file);
     }
 }
-
 void remover_evento(int num_evento)
 {
     evento eventos[MAX_SIZE];
@@ -346,11 +357,11 @@ void remover_evento(int num_evento)
         exit(1);
     }
 
-    while (fscanf(file, "%s %s %d %f %s\n", eventos[num_eventos].nome, eventos[num_eventos].data, &eventos[num_eventos].capacidade, &eventos[num_eventos].valor, &eventos[num_eventos].local) != EOF)
+    while (fscanf(file, "%s %s %d %f\n", eventos[num_eventos].nome, eventos[num_eventos].data, &eventos[num_eventos].capacidade, &eventos[num_eventos].valor) != EOF)
         num_eventos += 1;
 
     fclose(file);
-    
+
     if (num_evento < 1 || num_evento > num_eventos)
         printf("Número de evento inválido!\n");
     else
@@ -368,14 +379,39 @@ void remover_evento(int num_evento)
         }
 
         for (int i = 0; i < num_eventos; i++)
-            fprintf(file, "%s %s %d %.2f %s\n", eventos[i].nome, eventos[i].data, eventos[i].capacidade, eventos[i].valor, eventos[i].local);
+            fprintf(file, "oi%s %s %d %.2f\n", eventos[i].nome, eventos[i].data, eventos[i].capacidade, eventos[i].valor);
 
         fclose(file);
     }
 }
-
 int main(int argc, char *argv[])
 {
+    // Criação dos arquivos utilizados
+    FILE *usuariosFile = fopen("usuarios.txt", "a");
+    if (usuariosFile == NULL)
+    {
+        printf("Erro na criação do arquivo usuarios.txt\n");
+        exit(1);
+    }
+    fclose(usuariosFile);
+
+    FILE *eventosFile = fopen("eventos.txt", "a");
+    if (eventosFile == NULL)
+    {
+        printf("Erro na criação do arquivo eventos.txt\n");
+        exit(1);
+    }
+    fclose(eventosFile);
+
+    FILE *eventosUsuarioFile = fopen("eventos_usuario.txt", "a");
+    if (eventosUsuarioFile == NULL)
+    {
+        printf("Erro na criação do arquivo eventos_usuario.txt\n");
+        exit(1);
+    }
+    fclose(eventosUsuarioFile);
+
+    // Restante do código
     char *action = argv[1];
 
     if (strcmp(action, "login") == 0)
@@ -393,17 +429,14 @@ int main(int argc, char *argv[])
         char *email = argv[5];
         char *telefone = argv[6];
 
-        cadastro(nome,login,senha,email,telefone);
-
+        cadastro(nome, login, senha, email, telefone);
     }
     else if (strcmp(action, "participar") == 0)
-    {   
-        char * num_evento_str = argv[3];
-        char * login = argv[2];
+    {
+        char *num_evento_str = argv[3];
+        char *login = argv[2];
 
         int num_evento = atoi(num_evento_str);
-
-        //printf("%d %s %s %s %s %d %f %s", num_evento,login, senha, nome,data,capacidade,valor,local);
 
         adicionar_evento_usuario(login, num_evento);
     }
@@ -419,7 +452,6 @@ int main(int argc, char *argv[])
         float valor = atof(valor_str);
 
         adicionar_evento(nome, data, capacidade, valor, local);
-        printf("DEU BOM!");
     }
     else if (strcmp(action, "editar") == 0)
     {
@@ -433,11 +465,11 @@ int main(int argc, char *argv[])
         int num_evento = atoi(num_evento_str);
         int capacidade = atoi(capacidade_str);
         float valor = atof(valor_str);
-        
+
         atualizar_evento(num_evento, nome, data, capacidade, valor, local);
     }
     else if (strcmp(action, "remover") == 0)
-    {   
+    {
         char *num_evento_str = argv[2];
 
         int num_evento = atoi(num_evento_str);
@@ -451,3 +483,16 @@ int main(int argc, char *argv[])
 
     return 0;
 }
+// ``A função `main` é onde o programa começa a ser executado. Antes de processar qualquer ação, são criados os arquivos `usuarios.txt`, `eventos.txt` e `eventos_usuario.txt`, caso não existam, para garantir que os arquivos estejam disponíveis para leitura e escrita.
+
+// Em seguida, é obtida a ação a ser executada a partir do primeiro argumento passado para o programa. Dependendo da ação, os argumentos adicionais são lidos e passados para as funções correspondentes.
+
+// - Se a ação for "login", é feita a chamada para a função `realizarLogin` com os argumentos de login e senha.
+// - Se a ação for "cadastrar", é feita a chamada para a função `cadastro` com os argumentos de nome, login, senha, email e telefone.
+// - Se a ação for "participar", é feita a chamada para a função `adicionar_evento_usuario` com os argumentos de login e número do evento.
+// - Se a ação for "adicionar", é feita a chamada para a função `adicionar_evento` com os argumentos de nome, data, capacidade, valor e local.
+// - Se a ação for "editar", é feita a chamada para a função `atualizar_evento` com os argumentos de número do evento, nome, data, capacidade, valor e local.
+// - Se a ação for "remover", é feita a chamada para a função `remover_evento` com o argumento de número do evento.
+// - Caso contrário, é exibida a mensagem "Ação inválida".
+
+// Por fim, o programa retorna 0 para indicar que foi executado sem erros.
